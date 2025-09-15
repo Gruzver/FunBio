@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PUCP - Monitor de Kits Funbio</title>
+    <title>PAIDEIA - Monitor de Kits</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <style>
         * {
@@ -73,7 +73,7 @@
 
         .header {
             text-align: center;
-            padding: 40px 20px;
+            padding: 30px 20px;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
@@ -83,53 +83,53 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .logo-icon {
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             background: white;
             border-radius: 50%;
-            margin-right: 15px;
+            margin-right: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #1e3c72;
             font-weight: bold;
-            font-size: 18px;
+            font-size: 16px;
         }
 
         .logo-text {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: bold;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
         }
 
         .subtitle {
-            font-size: 18px;
+            font-size: 16px;
             opacity: 0.9;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
         .container {
             max-width: 800px;
-            margin: 50px auto;
-            padding: 0 20px;
+            margin: 30px auto;
+            padding: 0 15px;
         }
 
         .card {
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(20px);
-            border-radius: 20px;
+            border-radius: 16px;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 40px;
+            padding: 25px;
             text-align: center;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
         }
 
         .control-section {
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         .form-group {
@@ -146,16 +146,17 @@
         .custom-select {
             position: relative;
             display: inline-block;
-            width: 250px;
+            width: 100%;
+            max-width: 280px;
             margin: 0 auto;
         }
 
         .select-button {
             width: 100%;
-            padding: 15px 20px;
+            padding: 14px 18px;
             font-size: 16px;
             border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
+            border-radius: 10px;
             background: rgba(255, 255, 255, 0.15);
             color: white;
             backdrop-filter: blur(10px);
@@ -176,7 +177,7 @@
         .select-button:focus {
             outline: none;
             border-color: rgba(255, 255, 255, 0.7);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
         }
 
         .select-arrow {
@@ -195,9 +196,9 @@
             right: 0;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
-            border-radius: 12px;
+            border-radius: 10px;
             border: 2px solid rgba(255, 255, 255, 0.3);
-            max-height: 300px;
+            max-height: 250px;
             overflow-y: auto;
             z-index: 1000;
             margin-top: 5px;
@@ -205,7 +206,7 @@
             visibility: hidden;
             transform: translateY(-10px);
             transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
         }
 
         .select-options.open {
@@ -215,7 +216,7 @@
         }
 
         .select-option {
-            padding: 15px 20px;
+            padding: 12px 18px;
             color: #1e3c72;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -240,11 +241,11 @@
 
         .kit-icon {
             display: inline-block;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             background: linear-gradient(45deg, #4CAF50, #45a049);
             border-radius: 4px;
-            margin-right: 10px;
+            margin-right: 8px;
             position: relative;
             vertical-align: middle;
         }
@@ -254,8 +255,8 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 8px;
-            height: 8px;
+            width: 7px;
+            height: 7px;
             background: white;
             border-radius: 50%;
             transform: translate(-50%, -50%);
@@ -265,19 +266,22 @@
             background: linear-gradient(45deg, #4CAF50, #45a049);
             color: white;
             border: none;
-            padding: 15px 30px;
+            padding: 14px 28px;
             font-size: 16px;
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 600;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+            display: inline-block;
+            width: 100%;
+            max-width: 280px;
         }
 
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4);
         }
 
         .btn:disabled {
@@ -290,17 +294,24 @@
         .btn-copy {
             background: linear-gradient(45deg, #2196F3, #0d8bf2);
             padding: 10px 20px;
-            margin-top: 10px;
+            margin-top: 12px;
+            font-size: 14px;
+            max-width: 200px;
         }
 
         .btn-copy:hover {
-            box-shadow: 0 8px 25px rgba(33, 150, 243, 0.4);
+            box-shadow: 0 8px 20px rgba(33, 150, 243, 0.4);
+        }
+
+        .btn-disconnect {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
         }
 
         .status {
-            margin: 20px 0;
+            margin: 18px 0;
             font-size: 14px;
             opacity: 0.8;
+            min-height: 20px;
         }
 
         .status.connected {
@@ -312,62 +323,67 @@
             color: #f44336;
         }
 
+        .status.connecting {
+            color: #FF9800;
+        }
+
         .display-section {
-            min-height: 200px;
+            min-height: 180px;
         }
 
         .ip-container {
-            margin: 30px 0;
+            margin: 25px 0;
         }
 
         .current-ip {
-            font-size: 48px;
+            font-size: 36px;
             font-weight: bold;
             color: #4CAF50;
-            text-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+            text-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
             animation: glow 2s ease-in-out infinite alternate;
             word-break: break-all;
+            padding: 5px;
         }
 
         @keyframes glow {
-            from { text-shadow: 0 0 20px rgba(76, 175, 80, 0.5); }
-            to { text-shadow: 0 0 30px rgba(76, 175, 80, 0.8); }
+            from { text-shadow: 0 0 15px rgba(76, 175, 80, 0.5); }
+            to { text-shadow: 0 0 25px rgba(76, 175, 80, 0.8); }
         }
 
         .timestamp {
             font-size: 12px;
             opacity: 0.7;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
         .history {
-            margin-top: 30px;
+            margin-top: 25px;
         }
 
         .history-title {
-            font-size: 18px;
-            margin-bottom: 15px;
+            font-size: 16px;
+            margin-bottom: 12px;
             opacity: 0.7;
         }
 
         .history-list {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 15px;
             flex-wrap: wrap;
         }
 
         .history-item {
             background: rgba(255, 255, 255, 0.1);
-            padding: 10px 15px;
+            padding: 10px 12px;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 13px;
             opacity: 0.6;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
             flex: 1;
-            min-width: 120px;
-            max-width: 200px;
+            min-width: 110px;
+            max-width: 180px;
         }
 
         .history-item:hover {
@@ -377,8 +393,21 @@
 
         .no-data {
             opacity: 0.5;
-            font-size: 18px;
-            margin: 50px 0;
+            font-size: 16px;
+            margin: 40px 0;
+        }
+
+        .copy-feedback {
+            display: inline-block;
+            margin-left: 8px;
+            font-size: 12px;
+            color: #4CAF50;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .copy-feedback.show {
+            opacity: 1;
         }
 
         /* Mobile responsiveness */
@@ -388,35 +417,25 @@
             }
             
             .logo-text {
-                font-size: 24px;
+                font-size: 22px;
             }
             
             .subtitle {
-                font-size: 16px;
+                font-size: 15px;
             }
             
             .container {
                 margin: 20px auto;
-                padding: 0 15px;
+                padding: 0 10px;
             }
             
             .card {
                 padding: 20px;
-            }
-            
-            .custom-select {
-                width: 100%;
-                max-width: 280px;
-            }
-            
-            .btn {
-                width: 100%;
-                max-width: 280px;
-                padding: 12px 20px;
+                border-radius: 14px;
             }
             
             .current-ip {
-                font-size: 32px;
+                font-size: 28px;
             }
             
             .history-list {
@@ -427,33 +446,42 @@
             
             .history-item {
                 width: 100%;
-                max-width: 280px;
+                max-width: 250px;
             }
             
-            .select-options {
-                width: 100%;
-                left: 0;
-                right: 0;
+            .btn {
+                padding: 12px 20px;
+                font-size: 15px;
             }
         }
 
         @media (max-width: 480px) {
             .current-ip {
-                font-size: 28px;
+                font-size: 24px;
             }
             
             .logo-icon {
-                width: 40px;
-                height: 40px;
-                font-size: 16px;
+                width: 38px;
+                height: 38px;
+                font-size: 15px;
             }
             
             .logo-text {
-                font-size: 22px;
+                font-size: 20px;
             }
             
             .card {
                 padding: 15px;
+            }
+            
+            .select-button {
+                padding: 12px 16px;
+                font-size: 15px;
+            }
+            
+            .btn {
+                padding: 12px 16px;
+                font-size: 14px;
             }
         }
     </style>
@@ -468,10 +496,10 @@
 
     <div class="header">
         <div class="logo">
-            <div class="logo-icon">F</div>
-            <div class="logo-text">Fundamentos de Biomecatrónica</div>
+            <div class="logo-icon">P</div>
+            <div class="logo-text">PAIDEIA</div>
         </div>
-        <div class="subtitle">Módulo 1 | Monitor de Kits</div>
+        <div class="subtitle">Monitor de Kits IoT</div>
     </div>
 
     <div class="container">
@@ -551,7 +579,7 @@
                     <div class="ip-container">
                         <div id="currentIP" class="current-ip">---.---.---.---</div>
                         <button id="copyBtn" class="btn btn-copy" onclick="copyIP()">
-                            Copiar IP
+                            Copiar IP <span id="copyFeedback" class="copy-feedback">✓</span>
                         </button>
                         <div id="timestamp" class="timestamp"></div>
                     </div>
@@ -646,12 +674,17 @@
             }
         }
 
-        function updateStatus(message, isError = false) {
+        function updateStatus(message, type = '') {
             const statusEl = document.getElementById('status');
             statusEl.textContent = message;
-            statusEl.className = isError ? 'status error' : 'status';
-            if (!isError && isConnected) {
-                statusEl.className = 'status connected';
+            statusEl.className = 'status';
+            
+            if (type === 'error') {
+                statusEl.classList.add('error');
+            } else if (type === 'connected') {
+                statusEl.classList.add('connected');
+            } else if (type === 'connecting') {
+                statusEl.classList.add('connecting');
             }
         }
 
@@ -665,31 +698,33 @@
 
         function connect() {
             if (!selectedKit) {
-                updateStatus('Por favor selecciona un kit', true);
+                updateStatus('Por favor selecciona un kit', 'error');
                 return;
             }
 
             currentTopic = `FunBio/Kit${selectedKit}`;
             
-            // Crear cliente MQTT
+            // Usar HiveMQ con WSS para evitar problemas de seguridad
             const clientId = 'web-client-' + Math.random().toString(16).substr(2, 8);
-            client = new Paho.MQTT.Client('test.mosquitto.org', 8080, clientId);
+            client = new Paho.MQTT.Client('broker.hivemq.com', 8884, clientId);
             
             client.onConnectionLost = onConnectionLost;
             client.onMessageArrived = onMessageArrived;
             
-            updateStatus('Conectando...');
+            updateStatus('Conectando...', 'connecting');
             
             const options = {
+                useSSL: true,  // Habilitar SSL para conexión segura
                 onSuccess: onConnect,
                 onFailure: onConnectFailure,
-                useSSL: false
+                timeout: 3,
+                mqttVersion: 4
             };
             
             try {
                 client.connect(options);
             } catch (error) {
-                updateStatus('Error al conectar: ' + error.message, true);
+                updateStatus('Error al conectar: ' + error.message, 'error');
             }
         }
 
@@ -711,7 +746,7 @@
 
         function onConnect() {
             isConnected = true;
-            updateStatus('Conectado - Suscrito a ' + currentTopic);
+            updateStatus('Conectado - Suscrito a ' + currentTopic, 'connected');
             updateConnectionUI();
             
             // Suscribirse al tópico
@@ -726,14 +761,14 @@
         }
 
         function onConnectFailure(error) {
-            updateStatus('Error de conexión: ' + error.errorMessage, true);
+            updateStatus('Error de conexión: ' + error.errorMessage, 'error');
             isConnected = false;
             updateConnectionUI();
         }
 
         function onConnectionLost(responseObject) {
             if (responseObject.errorCode !== 0) {
-                updateStatus('Conexión perdida: ' + responseObject.errorMessage, true);
+                updateStatus('Conexión perdida: ' + responseObject.errorMessage, 'error');
             }
             isConnected = false;
             updateConnectionUI();
@@ -751,7 +786,7 @@
             // Agregar al historial
             addToHistory(ip, timestamp);
             
-            updateStatus('Conectado - Último mensaje: ' + new Date().toLocaleTimeString());
+            updateStatus('Conectado - Recibiendo datos', 'connected');
         }
 
         function addToHistory(ip, timestamp) {
@@ -786,12 +821,12 @@
             
             if (isConnected) {
                 connectBtn.textContent = 'Desconectar';
-                connectBtn.style.background = 'linear-gradient(45deg, #f44336, #d32f2f)';
+                connectBtn.classList.add('btn-disconnect');
                 selectButton.style.opacity = '0.6';
                 selectButton.style.pointerEvents = 'none';
             } else {
                 connectBtn.textContent = 'Conectar';
-                connectBtn.style.background = 'linear-gradient(45deg, #4CAF50, #45a049)';
+                connectBtn.classList.remove('btn-disconnect');
                 selectButton.style.opacity = '1';
                 selectButton.style.pointerEvents = 'auto';
             }
@@ -813,15 +848,14 @@
             const ip = document.getElementById('currentIP').textContent;
             if (ip !== '---.---.---.---') {
                 navigator.clipboard.writeText(ip).then(() => {
-                    const copyBtn = document.getElementById('copyBtn');
-                    const originalText = copyBtn.textContent;
-                    copyBtn.textContent = '¡Copiado!';
+                    const copyFeedback = document.getElementById('copyFeedback');
+                    copyFeedback.classList.add('show');
                     setTimeout(() => {
-                        copyBtn.textContent = originalText;
+                        copyFeedback.classList.remove('show');
                     }, 2000);
                 }).catch(err => {
                     console.error('Error al copiar: ', err);
-                    updateStatus('Error al copiar la IP', true);
+                    updateStatus('Error al copiar la IP', 'error');
                 });
             }
         }
