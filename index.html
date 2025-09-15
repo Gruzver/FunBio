@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PUCP - Monitor de Kits Funbio</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: white;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Decorative geometric shapes */
+        .bg-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .shape {
+            position: absolute;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .shape-1 {
+            width: 200px;
+            height: 200px;
+            top: 10%;
+            left: 5%;
+            transform: rotate(45deg);
+        }
+
+        .shape-2 {
+            width: 150px;
+            height: 150px;
+            top: 20%;
+            right: 10%;
+            border-radius: 50%;
+        }
+
+        .shape-3 {
+            width: 100px;
+            height: 100px;
+            bottom: 20%;
+            left: 15%;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+        }
+
+        .shape-4 {
+            width: 120px;
+            height: 120px;
+            bottom: 10%;
+            right: 20%;
+            transform: rotate(45deg);
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1e3c72;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-section {
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .custom-select {
+            position: relative;
+            display: inline-block;
+            width: 250px;
+            margin: 0 auto;
+        }
+
+        .select-button {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .select-button:hover {
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .select-button:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .select-arrow {
+            transition: transform 0.3s ease;
+            font-size: 12px;
+        }
+
+        .select-button.open .select-arrow {
+            transform: rotate(180deg);
+        }
+
+        .select-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            margin-top: 5px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .select-options.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .select-option {
+            padding: 15px 20px;
+            color: #1e3c72;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            border-bottom: 1px solid rgba(30, 60, 114, 0.1);
+        }
+
+        .select-option:last-child {
+            border-bottom: none;
+        }
+
+        .select-option:hover {
+            background: rgba(30, 60, 114, 0.1);
+            color: #1e3c72;
+        }
+
+        .select-option.selected {
+            background: rgba(76, 175, 80, 0.2);
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .kit-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border-radius: 4px;
+            margin-right: 10px;
+            position: relative;
+            vertical-align: middle;
+        }
+
+        .kit-icon::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-copy {
+            background: linear-gradient(45deg, #2196F3, #0d8bf2);
+            padding: 10px 20px;
+            margin-top: 10px;
+        }
+
+        .btn-copy:hover {
+            box-shadow: 0 8px 25px rgba(33, 150, 243, 0.4);
+        }
+
+        .status {
+            margin: 20px 0;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .status.connected {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .status.error {
+            color: #f44336;
+        }
+
+        .display-section {
+            min-height: 200px;
+        }
+
+        .ip-container {
+            margin: 30px 0;
+        }
+
+        .current-ip {
+            font-size: 48px;
+            font-weight: bold;
+            color: #4CAF50;
+            text-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+            word-break: break-all;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px rgba(76, 175, 80, 0.5); }
+            to { text-shadow: 0 0 30px rgba(76, 175, 80, 0.8); }
+        }
+
+        .timestamp {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 10px;
+        }
+
+        .history {
+            margin-top: 30px;
+        }
+
+        .history-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            opacity: 0.7;
+        }
+
+        .history-list {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .history-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            opacity: 0.6;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 120px;
+            max-width: 200px;
+        }
+
+        .history-item:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+        .no-data {
+            opacity: 0.5;
+            font-size: 18px;
+            margin: 50px 0;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .logo-text {
+                font-size: 24px;
+            }
+            
+            .subtitle {
+                font-size: 16px;
+            }
+            
+            .container {
+                margin: 20px auto;
+                padding: 0 15px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .custom-select {
+                width: 100%;
+                max-width: 280px;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 280px;
+                padding: 12px 20px;
+            }
+            
+            .current-ip {
+                font-size: 32px;
+            }
+            
+            .history-list {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .history-item {
+                width: 100%;
+                max-width: 280px;
+            }
+            
+            .select-options {
+                width: 100%;
+                left: 0;
+                right: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .current-ip {
+                font-size: 28px;
+            }
+            
+            .logo-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+            
+            .logo-text {
+                font-size: 22px;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+    </div>
+
+    <div class="header">
+        <div class="logo">
+            <div class="logo-icon">F</div>
+            <div class="logo-text">Fundamentos de Biomecatrónica</div>
+        </div>
+        <div class="subtitle">Módulo 1 | Monitor de Kits</div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="control-section">
+                <div class="form-group">
+                    <label for="kitSelect">Seleccionar Kit:</label>
+                    <div class="custom-select">
+                        <div class="select-button" id="selectButton" tabindex="0">
+                            <span id="selectedText">-- Selecciona un Kit --</span>
+                            <span class="select-arrow">▼</span>
+                        </div>
+                        <div class="select-options" id="selectOptions">
+                            <div class="select-option" data-value="">
+                                <span class="kit-icon"></span>
+                                -- Selecciona un Kit --
+                            </div>
+                            <div class="select-option" data-value="1">
+                                <span class="kit-icon"></span>
+                                Kit 1
+                            </div>
+                            <div class="select-option" data-value="2">
+                                <span class="kit-icon"></span>
+                                Kit 2
+                            </div>
+                            <div class="select-option" data-value="3">
+                                <span class="kit-icon"></span>
+                                Kit 3
+                            </div>
+                            <div class="select-option" data-value="4">
+                                <span class="kit-icon"></span>
+                                Kit 4
+                            </div>
+                            <div class="select-option" data-value="5">
+                                <span class="kit-icon"></span>
+                                Kit 5
+                            </div>
+                            <div class="select-option" data-value="6">
+                                <span class="kit-icon"></span>
+                                Kit 6
+                            </div>
+                            <div class="select-option" data-value="7">
+                                <span class="kit-icon"></span>
+                                Kit 7
+                            </div>
+                            <div class="select-option" data-value="8">
+                                <span class="kit-icon"></span>
+                                Kit 8
+                            </div>
+                            <div class="select-option" data-value="9">
+                                <span class="kit-icon"></span>
+                                Kit 9
+                            </div>
+                            <div class="select-option" data-value="10">
+                                <span class="kit-icon"></span>
+                                Kit 10
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="connectBtn" class="btn" onclick="toggleConnection()">
+                    Conectar
+                </button>
+                
+                <div id="status" class="status">
+                    Selecciona un kit y presiona Conectar
+                </div>
+            </div>
+
+            <div class="display-section">
+                <div id="noData" class="no-data">
+                    No hay datos disponibles
+                </div>
+                
+                <div id="dataDisplay" style="display: none;">
+                    <div class="ip-container">
+                        <div id="currentIP" class="current-ip">---.---.---.---</div>
+                        <button id="copyBtn" class="btn btn-copy" onclick="copyIP()">
+                            Copiar IP
+                        </button>
+                        <div id="timestamp" class="timestamp"></div>
+                    </div>
+                    
+                    <div class="history">
+                        <div class="history-title">Historial</div>
+                        <div id="historyList" class="history-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let client = null;
+        let isConnected = false;
+        let currentTopic = '';
+        let history = [];
+        let selectedKit = '';
+        const maxHistory = 3;
+
+        // Custom select functionality
+        const selectButton = document.getElementById('selectButton');
+        const selectOptions = document.getElementById('selectOptions');
+        const selectedText = document.getElementById('selectedText');
+
+        selectButton.addEventListener('click', toggleSelect);
+        selectButton.addEventListener('keydown', handleSelectKeydown);
+
+        // Close select when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!selectButton.contains(e.target) && !selectOptions.contains(e.target)) {
+                closeSelect();
+            }
+        });
+
+        // Handle option selection
+        selectOptions.addEventListener('click', function(e) {
+            const option = e.target.closest('.select-option');
+            if (option) {
+                selectOption(option);
+            }
+        });
+
+        function toggleSelect() {
+            if (isConnected) return; // No permitir cambio si está conectado
+            
+            const isOpen = selectOptions.classList.contains('open');
+            if (isOpen) {
+                closeSelect();
+            } else {
+                openSelect();
+            }
+        }
+
+        function openSelect() {
+            selectButton.classList.add('open');
+            selectOptions.classList.add('open');
+            selectButton.focus();
+        }
+
+        function closeSelect() {
+            selectButton.classList.remove('open');
+            selectOptions.classList.remove('open');
+        }
+
+        function selectOption(option) {
+            const value = option.dataset.value;
+            const text = option.textContent.trim();
+            
+            // Remove previous selection
+            selectOptions.querySelectorAll('.select-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Add selection to clicked option
+            option.classList.add('selected');
+            
+            selectedKit = value;
+            selectedText.textContent = text;
+            closeSelect();
+        }
+
+        function handleSelectKeydown(e) {
+            if (isConnected) return;
+            
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleSelect();
+            } else if (e.key === 'Escape') {
+                closeSelect();
+            }
+        }
+
+        function updateStatus(message, isError = false) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = isError ? 'status error' : 'status';
+            if (!isError && isConnected) {
+                statusEl.className = 'status connected';
+            }
+        }
+
+        function toggleConnection() {
+            if (!isConnected) {
+                connect();
+            } else {
+                disconnect();
+            }
+        }
+
+        function connect() {
+            if (!selectedKit) {
+                updateStatus('Por favor selecciona un kit', true);
+                return;
+            }
+
+            currentTopic = `FunBio/Kit${selectedKit}`;
+            
+            // Crear cliente MQTT
+            const clientId = 'web-client-' + Math.random().toString(16).substr(2, 8);
+            client = new Paho.MQTT.Client('test.mosquitto.org', 8080, clientId);
+            
+            client.onConnectionLost = onConnectionLost;
+            client.onMessageArrived = onMessageArrived;
+            
+            updateStatus('Conectando...');
+            
+            const options = {
+                onSuccess: onConnect,
+                onFailure: onConnectFailure,
+                useSSL: false
+            };
+            
+            try {
+                client.connect(options);
+            } catch (error) {
+                updateStatus('Error al conectar: ' + error.message, true);
+            }
+        }
+
+        function disconnect() {
+            if (client && isConnected) {
+                client.disconnect();
+                isConnected = false;
+                updateConnectionUI();
+                updateStatus('Desconectado');
+                hideData();
+                
+                // Clear all data when disconnecting
+                document.getElementById('currentIP').textContent = '---.---.---.---';
+                document.getElementById('timestamp').textContent = '';
+                history = [];
+                updateHistoryDisplay();
+            }
+        }
+
+        function onConnect() {
+            isConnected = true;
+            updateStatus('Conectado - Suscrito a ' + currentTopic);
+            updateConnectionUI();
+            
+            // Suscribirse al tópico
+            client.subscribe(currentTopic);
+            showData();
+            
+            // Clear previous data when connecting to a new kit
+            document.getElementById('currentIP').textContent = '---.---.---.---';
+            document.getElementById('timestamp').textContent = '';
+            history = [];
+            updateHistoryDisplay();
+        }
+
+        function onConnectFailure(error) {
+            updateStatus('Error de conexión: ' + error.errorMessage, true);
+            isConnected = false;
+            updateConnectionUI();
+        }
+
+        function onConnectionLost(responseObject) {
+            if (responseObject.errorCode !== 0) {
+                updateStatus('Conexión perdida: ' + responseObject.errorMessage, true);
+            }
+            isConnected = false;
+            updateConnectionUI();
+            hideData();
+        }
+
+        function onMessageArrived(message) {
+            const ip = message.payloadString;
+            const timestamp = new Date().toLocaleString();
+            
+            // Actualizar IP actual
+            document.getElementById('currentIP').textContent = ip;
+            document.getElementById('timestamp').textContent = `Última actualización: ${timestamp}`;
+            
+            // Agregar al historial
+            addToHistory(ip, timestamp);
+            
+            updateStatus('Conectado - Último mensaje: ' + new Date().toLocaleTimeString());
+        }
+
+        function addToHistory(ip, timestamp) {
+            // Agregar al inicio del array
+            history.unshift({ ip, timestamp });
+            
+            // Mantener solo los últimos elementos
+            if (history.length > maxHistory) {
+                history = history.slice(0, maxHistory);
+            }
+            
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            
+            history.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <div>${item.ip}</div>
+                    <div style="font-size: 10px; margin-top: 5px; opacity: 0.7;">${item.timestamp}</div>
+                `;
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        function updateConnectionUI() {
+            const connectBtn = document.getElementById('connectBtn');
+            
+            if (isConnected) {
+                connectBtn.textContent = 'Desconectar';
+                connectBtn.style.background = 'linear-gradient(45deg, #f44336, #d32f2f)';
+                selectButton.style.opacity = '0.6';
+                selectButton.style.pointerEvents = 'none';
+            } else {
+                connectBtn.textContent = 'Conectar';
+                connectBtn.style.background = 'linear-gradient(45deg, #4CAF50, #45a049)';
+                selectButton.style.opacity = '1';
+                selectButton.style.pointerEvents = 'auto';
+            }
+        }
+
+        function showData() {
+            document.getElementById('noData').style.display = 'none';
+            document.getElementById('dataDisplay').style.display = 'block';
+        }
+
+        function hideData() {
+            document.getElementById('noData').style.display = 'block';
+            document.getElementById('dataDisplay').style.display = 'none';
+            history = [];
+            updateHistoryDisplay();
+        }
+        
+        function copyIP() {
+            const ip = document.getElementById('currentIP').textContent;
+            if (ip !== '---.---.---.---') {
+                navigator.clipboard.writeText(ip).then(() => {
+                    const copyBtn = document.getElementById('copyBtn');
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = '¡Copiado!';
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Error al copiar: ', err);
+                    updateStatus('Error al copiar la IP', true);
+                });
+            }
+        }
+
+        // Limpiar al cerrar la página
+        window.addEventListener('beforeunload', function() {
+            if (client && isConnected) {
+                client.disconnect();
+            }
+        });
+    </script>
+</body>
+</html>
